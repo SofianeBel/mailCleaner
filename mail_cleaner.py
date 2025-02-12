@@ -13,6 +13,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
 from PyQt6.QtGui import QFont, QIcon
 import winreg
+import psutil
+import os
 
 # Configure logging with high precision timestamps
 logging.basicConfig(
@@ -26,75 +28,99 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def detect_active_outlook() -> Optional[str]:
+    """
+    Detect which version of Outlook is currently running by examining processes.
+    Returns: "new" for New Outlook, "classic" for Classic Outlook, or None if not found
+    """
+    try:
+        for proc in psutil.process_iter(['name', 'exe']):
+            try:
+                proc_name = proc.info['name'].lower()
+                if proc_name in ['outlook.exe', 'microsoft.office.outlook.hub.exe']:
+                    exe_path = proc.info.get('exe', '')
+                    if exe_path:
+                        logger.debug(f"Found Outlook process: {exe_path}")
+                        # Check if it's the new Outlook
+                        if any(indicator in exe_path.lower() for indicator in ['windowsapps\\microsoft.outlookforwindows', 'msedge_shell.exe']):
+                            logger.debug("Detected New Outlook as active")
+                            return "new"
+                        else:
+                            logger.debug("Detected Classic Outlook as active")
+                            return "classic"
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
+                logger.debug(f"Skipping process due to: {str(e)}")
+                continue
+        logger.debug("No running Outlook process found")
+        return None
+    except Exception as e:
+        logger.error(f"Error detecting active Outlook: {str(e)}")
+        return None
+
 def check_outlook_version():
     """Check Outlook version and compatibility"""
     try:
         outlook_versions = []
+        active_version = detect_active_outlook()
+        logger.debug(f"Active Outlook version detected: {active_version}")
         
         # Try to detect both Classic and New Outlook
         try:
-            # Try Classic Outlook first
-            outlook = win32com.client.Dispatch("Outlook.Application")
-            classic_version = outlook.Version
-            logger.debug(f"Found Classic Outlook version: {classic_version}")
+            # Check for Classic Outlook
+            try:
+                outlook = win32com.client.Dispatch("Outlook.Application")
+                classic_version = outlook.Version
+                logger.debug(f"Found Classic Outlook version: {classic_version}")
+                
+                outlook_versions.append({
+                    "version": classic_version,
+                    "name": "Outlook (Classic)",
+                    "is_modern": True,
+                    "major_version": ".".join(classic_version.split(".")[:2]),
+                    "path": "Classic Installation",
+                    "bitness": "Desktop",
+                    "is_active": active_version == "classic",
+                    "display_name": "Outlook (Classic)",
+                    "description": "Traditional desktop version of Outlook with full functionality"
+                })
+            except Exception as e:
+                logger.debug(f"Could not detect Classic Outlook: {str(e)}")
             
-            outlook_versions.append({
-                "version": classic_version,
-                "name": "Outlook (Classic)",
-                "is_modern": True,
-                "major_version": ".".join(classic_version.split(".")[:2]),
-                "path": "Classic Installation",
-                "bitness": "Desktop",
-                "is_active": True,  # Classic is typically the active one when detected
-                "display_name": "Outlook (Classic)",
-                "description": "Traditional desktop version of Outlook with full functionality"
-            })
-            
-            # Check for New Outlook using multiple registry paths
+            # Check for New Outlook using user-accessible registry paths
             new_outlook_detected = False
-            registry_paths = [
-                (winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Office\16.0\Outlook\Options"),
-                (winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Office\16.0\Outlook\Preferences"),
-                (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Office\ClickToRun\Configuration"),
+            user_registry_paths = [
+                (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Office\16.0\Outlook\Options"),
+                (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Office\16.0\Outlook\Preferences"),
                 (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Office\16.0\Common\ExperimentConfigs\ExternalFeatureOverrides\outlook")
             ]
             
-            for root_key, path in registry_paths:
+            for root_key, path in user_registry_paths:
                 try:
-                    key = winreg.OpenKey(root_key, path)
+                    key = winreg.OpenKey(root_key, path, 0, winreg.KEY_READ)
                     try:
                         # Check different possible registry values
                         for value_name in ["NewOutlook", "UseNewOutlook", "Microsoft.Office.Outlook.Hub.HubApp"]:
                             try:
                                 value, _ = winreg.QueryValueEx(key, value_name)
                                 if value:
-                                    logger.debug(f"Found New Outlook indicator: {value_name}={value}")
+                                    logger.debug(f"Found New Outlook indicator in registry: {value_name}={value}")
                                     new_outlook_detected = True
                                     break
                             except WindowsError:
                                 continue
                     finally:
                         winreg.CloseKey(key)
-                except WindowsError:
+                except WindowsError as e:
+                    logger.debug(f"Could not access registry path {path}: {str(e)}")
                     continue
                 
                 if new_outlook_detected:
                     break
             
-            # Also check if the New Outlook app is installed
-            try:
-                app_paths = [
-                    r"C:\Program Files\WindowsApps\Microsoft.OutlookForWindows_",
-                    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge_shell.exe"  # New Outlook can run through Edge
-                ]
-                
-                for path in app_paths:
-                    if any(p.startswith(path) for p in sys.path):
-                        logger.debug(f"Found New Outlook installation at {path}")
-                        new_outlook_detected = True
-                        break
-            except Exception as e:
-                logger.debug(f"Error checking New Outlook installation paths: {str(e)}")
+            # If we haven't detected New Outlook yet, try checking common installation paths
+            if not new_outlook_detected and active_version == "new":
+                logger.debug("New Outlook detected through process but not registry")
+                new_outlook_detected = True
             
             if new_outlook_detected:
                 outlook_versions.append({
@@ -104,13 +130,18 @@ def check_outlook_version():
                     "major_version": "16.0",
                     "path": "New Installation",
                     "bitness": "Modern",
-                    "is_active": False,  # Since Classic was detected as active
+                    "is_active": active_version == "new",
                     "display_name": "Outlook (New)",
                     "description": "Modern web-based version of Outlook with updated interface"
                 })
                 logger.debug("Added New Outlook to detected versions")
             
             if len(outlook_versions) > 0:
+                # If no active version was detected but we found installations,
+                # mark the first one as active
+                if active_version is None and outlook_versions:
+                    outlook_versions[0]["is_active"] = True
+                    logger.debug(f"No active version detected, marking {outlook_versions[0]['name']} as active")
                 return outlook_versions
             else:
                 logger.error("No Outlook versions found")
@@ -219,190 +250,153 @@ class OutlookVersionDialog(QDialog):
         layout.addLayout(button_layout)
 
 class OutlookVersionSelectionDialog(QDialog):
-    """Dialog for selecting between classic and new Outlook"""
-    def __init__(self, versions: List[Dict], parent=None):
+    def __init__(self, outlook_versions, parent=None):
         super().__init__(parent)
-        self.versions = versions
-        self.selected_version = None
-        self.initUI()
-        
-    def initUI(self):
-        self.setWindowTitle("Select Outlook Version")
+        self.setWindowTitle("Choose Your Outlook Version")
         self.setMinimumWidth(500)
+        self.outlook_versions = outlook_versions
+        self.selected_version = None
+        
+        # Main layout
         layout = QVBoxLayout(self)
-        layout.setSpacing(15)
-        layout.setContentsMargins(20, 20, 20, 20)
         
-        # Title
-        title = QLabel("Choose Your Preferred Outlook Version")
-        title.setStyleSheet("font-size: 16px; font-weight: bold; color: #333333;")
-        layout.addWidget(title)
+        # Info label at the top
+        info_label = QLabel("Multiple Outlook versions detected. Please select the version you want to use:")
+        info_label.setWordWrap(True)
+        info_label.setStyleSheet("font-size: 10pt; margin-bottom: 10px;")
+        layout.addWidget(info_label)
         
-        # Info text
-        info = QLabel(
-            "Multiple Outlook versions were detected on your system. "
-            "Please select which version you would like to use with Mail Cleaner Pro:"
-        )
-        info.setWordWrap(True)
-        info.setStyleSheet("color: #666666; margin-bottom: 10px;")
-        layout.addWidget(info)
+        # Create a button group for radio buttons
+        self.button_group = QButtonGroup(self)
         
-        # Versions frame
-        versions_frame = QFrame()
-        versions_frame.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border: 1px solid #e0e0e0;
-                border-radius: 8px;
-                padding: 20px;
-            }
-        """)
-        versions_layout = QVBoxLayout(versions_frame)
-        versions_layout.setSpacing(15)
-        
-        self.button_group = QButtonGroup()
-        
-        for i, version in enumerate(self.versions):
+        # Add version options
+        for version_info in outlook_versions:
             # Create a frame for each version
             version_frame = QFrame()
-            version_frame.setStyleSheet("""
-                QFrame {
-                    border: 1px solid #e0e0e0;
-                    border-radius: 4px;
-                    padding: 15px;
-                    margin: 5px;
-                }
-            """)
-            if version.get("is_active", False):
-                version_frame.setStyleSheet(version_frame.styleSheet() + """
+            version_frame.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Raised)
+            version_frame.setLineWidth(1)
+            
+            # Set frame style based on active status
+            if version_info["is_active"]:
+                version_frame.setStyleSheet("""
                     QFrame {
                         background-color: #e3f2fd;
-                        border: 1px solid #90caf9;
+                        border: 2px solid #2196f3;
+                        border-radius: 5px;
+                        padding: 10px;
+                        margin: 5px;
+                    }
+                """)
+            else:
+                version_frame.setStyleSheet("""
+                    QFrame {
+                        background-color: #f5f5f5;
+                        border: 1px solid #ddd;
+                        border-radius: 5px;
+                        padding: 10px;
+                        margin: 5px;
                     }
                 """)
             
-            version_layout = QVBoxLayout(version_frame)
+            # Frame layout
+            frame_layout = QVBoxLayout(version_frame)
             
             # Radio button with version name
-            radio = QRadioButton(version["display_name"])
-            radio.setStyleSheet("""
-                QRadioButton {
-                    font-size: 14px;
-                    font-weight: bold;
-                    padding: 5px;
-                }
-            """)
-            if version.get("is_active", False):
-                radio.setStyleSheet(radio.styleSheet() + "color: #1976d2;")
+            radio = QRadioButton(version_info["display_name"])
+            radio.setFont(QFont("", 10, QFont.Weight.Bold))
+            self.button_group.addButton(radio)
+            frame_layout.addWidget(radio)
             
-            self.button_group.addButton(radio, i)
-            version_layout.addWidget(radio)
+            # Version details
+            details_layout = QVBoxLayout()
+            details_layout.setContentsMargins(20, 0, 0, 0)
+            
+            # Version info
+            version_label = QLabel(f"Version: {version_info['version']}")
+            version_label.setStyleSheet("color: #666;")
+            details_layout.addWidget(version_label)
             
             # Description
-            desc = QLabel(version["description"])
-            desc.setStyleSheet("color: #666666; padding-left: 25px;")
-            version_layout.addWidget(desc)
+            desc_label = QLabel(version_info["description"])
+            desc_label.setWordWrap(True)
+            desc_label.setStyleSheet("color: #666;")
+            details_layout.addWidget(desc_label)
             
-            # Status indicators
-            status_layout = QHBoxLayout()
-            if version.get("is_active", False):
-                status = QLabel("✓ Currently Active")
-                status.setStyleSheet("color: #2e7d32; font-weight: bold; padding-left: 25px;")
-                status_layout.addWidget(status)
+            # Active status
+            if version_info["is_active"]:
+                active_label = QLabel("✓ Currently Active")
+                active_label.setStyleSheet("color: #2196f3; font-weight: bold;")
+                details_layout.addWidget(active_label)
             
-            version_layout.addLayout(status_layout)
-            versions_layout.addWidget(version_frame)
+            frame_layout.addLayout(details_layout)
+            layout.addWidget(version_frame)
+            
+            # Set the active version as default selection
+            if version_info["is_active"]:
+                radio.setChecked(True)
+                self.selected_version = version_info
         
-        # Select the active version by default
-        active_version = next((v for v in self.versions if v.get("is_active", False)), None)
-        if active_version:
-            self.button_group.button(self.versions.index(active_version)).setChecked(True)
-        
-        layout.addWidget(versions_frame)
-        
-        # Note about version selection
-        note = QLabel(
-            "Note: Your selection will be used for all Mail Cleaner Pro operations. "
-            "You can change this selection by restarting the application."
-        )
-        note.setWordWrap(True)
-        note.setStyleSheet("color: #666666; font-style: italic; margin-top: 10px;")
-        layout.addWidget(note)
-        
-        # Warning for switching from active version
+        # Warning label for switching from active version
         self.warning_label = QLabel()
         self.warning_label.setWordWrap(True)
-        self.warning_label.setStyleSheet("color: #f57c00; margin-top: 10px;")
+        self.warning_label.setStyleSheet("color: #f44336; margin-top: 10px;")
         self.warning_label.hide()
         layout.addWidget(self.warning_label)
         
-        # Connect radio button changes
-        self.button_group.buttonClicked.connect(self.on_version_selected)
+        # Note about selection
+        note_label = QLabel("Note: This selection will be used for all operations in Mail Cleaner Pro")
+        note_label.setWordWrap(True)
+        note_label.setStyleSheet("color: #666; font-style: italic; margin-top: 10px;")
+        layout.addWidget(note_label)
         
-        # Buttons
-        button_layout = QHBoxLayout()
-        ok_button = QPushButton("Use Selected Version")
+        # Button box
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        
+        # Customize the OK button
+        ok_button = button_box.button(QDialogButtonBox.StandardButton.Ok)
+        ok_button.setText("Use Selected Version")
         ok_button.setStyleSheet("""
             QPushButton {
-                background-color: #0078D4;
+                background-color: #2196f3;
                 color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 4px;
-                min-width: 150px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #106EBE;
-            }
-        """)
-        ok_button.clicked.connect(self.accept)
-        
-        cancel_button = QPushButton("Cancel")
-        cancel_button.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: #333333;
-                border: 1px solid #cccccc;
-                padding: 8px 16px;
+                padding: 6px 12px;
                 border-radius: 4px;
                 min-width: 100px;
             }
             QPushButton:hover {
-                background-color: #f5f5f5;
+                background-color: #1976d2;
             }
         """)
-        cancel_button.clicked.connect(self.reject)
         
-        button_layout.addStretch()
-        button_layout.addWidget(cancel_button)
-        button_layout.addWidget(ok_button)
+        layout.addWidget(button_box)
         
-        layout.addLayout(button_layout)
+        # Connect radio button changes
+        self.button_group.buttonClicked.connect(self.on_version_selected)
     
-    def on_version_selected(self, button):
-        """Handle version selection changes"""
-        selected_id = self.button_group.id(button)
-        selected_version = self.versions[selected_id]
-        
-        # Show warning if switching from active version to another
-        if not selected_version.get("is_active", False):
-            self.warning_label.setText(
-                "⚠ Warning: You are choosing to use a different version than the currently "
-                "active Outlook installation. This might cause compatibility issues."
-            )
-            self.warning_label.show()
-        else:
-            self.warning_label.hide()
+    def on_version_selected(self, radio):
+        # Find the corresponding version info
+        for version_info in self.outlook_versions:
+            if version_info["display_name"] == radio.text():
+                self.selected_version = version_info
+                
+                # Show warning if switching from active version
+                active_version = next((v for v in self.outlook_versions if v["is_active"]), None)
+                if active_version and active_version != version_info:
+                    self.warning_label.setText(
+                        f"Warning: You are switching from the currently active {active_version['display_name']}. "
+                        "This may affect the application's behavior."
+                    )
+                    self.warning_label.show()
+                else:
+                    self.warning_label.hide()
+                break
     
-    def accept(self):
-        """Handle dialog acceptance"""
-        selected_id = self.button_group.checkedId()
-        if selected_id >= 0:
-            self.selected_version = self.versions[selected_id]
-            super().accept()
-        else:
-            QMessageBox.warning(self, "Warning", "Please select an Outlook version.")
+    def get_selected_version(self):
+        return self.selected_version
 
 class PreviewDialog(QDialog):
     """Dialog for previewing emails before deletion/archiving"""
@@ -653,7 +647,7 @@ class MailCleanerUI(QMainWindow):
             # Multiple versions found
             dialog = OutlookVersionSelectionDialog(versions, self)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                self.outlook_version = dialog.selected_version
+                self.outlook_version = dialog.get_selected_version()
             else:
                 return False
         else:

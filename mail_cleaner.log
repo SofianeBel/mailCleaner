@@ -97,3 +97,74 @@
 2025-02-12 10:59:45.904 DEBUG: QApplication initialized
 2025-02-12 10:59:45.914 DEBUG: Application style set to Fusion
 2025-02-12 10:59:46.766 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 11:11:00.376 DEBUG: Script started
+2025-02-12 11:11:00.376 DEBUG: Starting Mail Cleaner application...
+2025-02-12 11:11:00.410 DEBUG: QApplication initialized
+2025-02-12 11:11:00.417 DEBUG: Application style set to Fusion
+2025-02-12 11:11:01.730 DEBUG: No running Outlook process found
+2025-02-12 11:11:01.731 DEBUG: Active Outlook version detected: None
+2025-02-12 11:11:02.584 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 11:11:02.586 ERROR: Error getting Outlook versions: [WinError 5] Accès refusé: 'C:\\Program Files\\WindowsApps'
+2025-02-12 11:13:13.539 DEBUG: Script started
+2025-02-12 11:13:13.540 DEBUG: Starting Mail Cleaner application...
+2025-02-12 11:13:13.573 DEBUG: QApplication initialized
+2025-02-12 11:13:13.581 DEBUG: Application style set to Fusion
+2025-02-12 11:13:14.816 DEBUG: No running Outlook process found
+2025-02-12 11:13:14.817 DEBUG: Active Outlook version detected: None
+2025-02-12 11:13:15.610 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 11:13:15.611 DEBUG: No active version detected, marking Outlook (Classic) as active
+2025-02-12 11:13:56.145 DEBUG: Script started
+2025-02-12 11:13:56.146 DEBUG: Starting Mail Cleaner application...
+2025-02-12 11:13:56.180 DEBUG: QApplication initialized
+2025-02-12 11:13:56.188 DEBUG: Application style set to Fusion
+2025-02-12 11:13:57.719 DEBUG: No running Outlook process found
+2025-02-12 11:13:57.720 DEBUG: Active Outlook version detected: None
+2025-02-12 11:13:58.650 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 11:13:58.651 DEBUG: No active version detected, marking Outlook (Classic) as active
+2025-02-12 11:47:18.206 DEBUG: Script started
+2025-02-12 11:47:18.207 DEBUG: Starting Mail Cleaner application...
+2025-02-12 11:47:18.315 DEBUG: QApplication initialized
+2025-02-12 11:47:18.325 DEBUG: Application style set to Fusion
+2025-02-12 11:47:19.075 DEBUG: No running Outlook process found
+2025-02-12 11:47:19.076 DEBUG: Active Outlook version detected: None
+2025-02-12 11:47:19.947 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 11:47:19.948 DEBUG: No active version detected, marking Outlook (Classic) as active
+2025-02-12 11:50:46.670 DEBUG: Script started
+2025-02-12 11:50:46.671 DEBUG: Starting Mail Cleaner application...
+2025-02-12 11:50:46.689 DEBUG: QApplication initialized
+2025-02-12 11:50:46.694 DEBUG: Application style set to Fusion
+2025-02-12 11:50:47.430 DEBUG: No running Outlook process found
+2025-02-12 11:50:47.431 DEBUG: Active Outlook version detected: None
+2025-02-12 11:50:48.153 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 11:50:48.983 DEBUG: Found Outlook process: C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE
+2025-02-12 11:50:48.984 DEBUG: Detected Classic Outlook as active
+2025-02-12 11:50:48.985 DEBUG: No active version detected, marking Outlook (Classic) as active
+2025-02-12 11:50:56.936 DEBUG: Main window created
+2025-02-12 11:50:56.970 DEBUG: Main window displayed and activated
+2025-02-12 11:50:56.971 DEBUG: Entering main event loop
+2025-02-12 11:53:46.701 DEBUG: Script started
+2025-02-12 11:53:46.701 DEBUG: Starting Mail Cleaner application...
+2025-02-12 11:53:46.725 DEBUG: QApplication initialized
+2025-02-12 11:53:46.731 DEBUG: Application style set to Fusion
+2025-02-12 11:53:47.508 DEBUG: Found Outlook process: C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE
+2025-02-12 11:53:47.508 DEBUG: Detected Classic Outlook as active
+2025-02-12 11:53:47.509 DEBUG: Active Outlook version detected: classic
+2025-02-12 11:53:47.522 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 11:53:48.336 DEBUG: Found Outlook process: C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE
+2025-02-12 11:53:48.336 DEBUG: Detected Classic Outlook as active
+2025-02-12 11:53:50.734 DEBUG: Main window created
+2025-02-12 11:53:50.781 DEBUG: Main window displayed and activated
+2025-02-12 11:53:50.783 DEBUG: Entering main event loop
+2025-02-12 12:00:07.301 DEBUG: Script started
+2025-02-12 12:00:07.302 DEBUG: Starting Mail Cleaner application...
+2025-02-12 12:00:07.321 DEBUG: QApplication initialized
+2025-02-12 12:00:07.326 DEBUG: Application style set to Fusion
+2025-02-12 12:00:07.908 DEBUG: No running Outlook process found
+2025-02-12 12:00:07.909 DEBUG: Active Outlook version detected: None
+2025-02-12 12:00:08.621 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 12:00:09.353 DEBUG: Found Outlook process: C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE
+2025-02-12 12:00:09.354 DEBUG: Detected Classic Outlook as active
+2025-02-12 12:00:09.355 DEBUG: No active version detected, marking Outlook (Classic) as active
+2025-02-12 12:00:12.123 DEBUG: Main window created
+2025-02-12 12:00:12.167 DEBUG: Main window displayed and activated
+2025-02-12 12:00:12.178 DEBUG: Entering main event loop
