@@ -1,0 +1,99 @@
+2025-02-12 10:05:44.804 DEBUG: Script started
+2025-02-12 10:05:44.806 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:05:44.898 DEBUG: QApplication initialized
+2025-02-12 10:05:44.907 DEBUG: Application style set to Fusion
+2025-02-12 10:05:44.979 DEBUG: Main window created
+2025-02-12 10:05:45.130 DEBUG: Main window displayed
+2025-02-12 10:05:45.130 DEBUG: Entering main event loop
+2025-02-12 10:07:02.871 DEBUG: Script started
+2025-02-12 10:07:02.871 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:07:02.888 DEBUG: QApplication initialized
+2025-02-12 10:07:02.894 DEBUG: Application style set to Fusion
+2025-02-12 10:07:02.909 DEBUG: Main window created
+2025-02-12 10:07:03.014 DEBUG: Main window displayed and activated
+2025-02-12 10:07:03.014 DEBUG: Entering main event loop
+2025-02-12 10:07:53.320 DEBUG: Script started
+2025-02-12 10:07:53.321 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:07:53.353 DEBUG: QApplication initialized
+2025-02-12 10:07:53.358 DEBUG: Application style set to Fusion
+2025-02-12 10:07:53.373 DEBUG: Main window created
+2025-02-12 10:07:53.480 DEBUG: Main window displayed and activated
+2025-02-12 10:07:53.481 DEBUG: Entering main event loop
+2025-02-12 10:09:31.346 DEBUG: Script started
+2025-02-12 10:09:31.346 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:09:31.367 DEBUG: QApplication initialized
+2025-02-12 10:09:31.373 DEBUG: Application style set to Fusion
+2025-02-12 10:09:31.388 DEBUG: Main window created
+2025-02-12 10:09:35.534 DEBUG: Main window displayed and activated
+2025-02-12 10:09:35.535 DEBUG: Entering main event loop
+2025-02-12 10:30:25.340 DEBUG: Script started
+2025-02-12 10:30:25.341 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:30:25.409 DEBUG: QApplication initialized
+2025-02-12 10:30:25.418 DEBUG: Application style set to Fusion
+2025-02-12 10:30:25.623 DEBUG: Main window created
+2025-02-12 10:30:31.225 DEBUG: Main window displayed and activated
+2025-02-12 10:30:31.236 DEBUG: Entering main event loop
+2025-02-12 10:31:12.364 ERROR: Error accessing folder Inbox: (-2147352567, 'Une exception s’est produite.', (4096, 'Microsoft Outlook', "Impossible de terminer l'opération. Vous n'êtes pas connecté.", None, 0, -2147352567), None)
+2025-02-12 10:35:31.073 DEBUG: Script started
+2025-02-12 10:35:31.074 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:35:31.103 DEBUG: QApplication initialized
+2025-02-12 10:35:31.112 DEBUG: Application style set to Fusion
+2025-02-12 10:35:43.672 DEBUG: Main window created
+2025-02-12 10:35:43.699 DEBUG: Main window displayed and activated
+2025-02-12 10:35:43.700 DEBUG: Entering main event loop
+2025-02-12 10:39:55.350 DEBUG: Script started
+2025-02-12 10:39:55.351 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:39:55.387 DEBUG: QApplication initialized
+2025-02-12 10:39:55.397 DEBUG: Application style set to Fusion
+2025-02-12 10:40:05.018 DEBUG: Main window created
+2025-02-12 10:40:05.075 DEBUG: Main window displayed and activated
+2025-02-12 10:40:05.080 DEBUG: Entering main event loop
+2025-02-12 10:40:27.362 ERROR: Error accessing folder Inbox: (-2147352567, 'Une exception s’est produite.', (4096, 'Microsoft Outlook', "Impossible de terminer l'opération. Vous n'êtes pas connecté.", None, 0, -2147352567), None)
+2025-02-12 10:44:26.706 DEBUG: Script started
+2025-02-12 10:44:26.707 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:44:26.740 DEBUG: QApplication initialized
+2025-02-12 10:44:26.747 DEBUG: Application style set to Fusion
+2025-02-12 10:44:27.611 DEBUG: Found active Outlook version: 16.0.0.18429
+2025-02-12 10:44:43.622 DEBUG: Main window created
+2025-02-12 10:44:43.660 DEBUG: Main window displayed and activated
+2025-02-12 10:44:43.661 DEBUG: Entering main event loop
+2025-02-12 10:45:16.235 DEBUG: Script started
+2025-02-12 10:45:16.236 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:45:16.262 DEBUG: QApplication initialized
+2025-02-12 10:45:16.270 DEBUG: Application style set to Fusion
+2025-02-12 10:45:17.166 DEBUG: Found active Outlook version: 16.0.0.18429
+2025-02-12 10:45:23.871 DEBUG: Main window created
+2025-02-12 10:45:23.910 DEBUG: Main window displayed and activated
+2025-02-12 10:45:23.911 DEBUG: Entering main event loop
+2025-02-12 10:45:40.863 ERROR: Error accessing folder Inbox: (-2147352567, 'Une exception s’est produite.', (4096, 'Microsoft Outlook', "Impossible de terminer l'opération. Vous n'êtes pas connecté.", None, 0, -2147352567), None)
+2025-02-12 10:45:54.217 DEBUG: Script started
+2025-02-12 10:45:54.218 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:45:54.261 DEBUG: QApplication initialized
+2025-02-12 10:45:54.270 DEBUG: Application style set to Fusion
+2025-02-12 10:45:55.176 DEBUG: Found active Outlook version: 16.0.0.18429
+2025-02-12 10:51:15.370 DEBUG: Main window created
+2025-02-12 10:51:15.424 DEBUG: Main window displayed and activated
+2025-02-12 10:51:15.432 DEBUG: Entering main event loop
+2025-02-12 10:51:19.944 DEBUG: Script started
+2025-02-12 10:51:19.944 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:51:19.986 DEBUG: QApplication initialized
+2025-02-12 10:51:19.994 DEBUG: Application style set to Fusion
+2025-02-12 10:51:20.863 DEBUG: Found active Outlook version: 16.0.0.18429
+2025-02-12 10:51:31.033 DEBUG: Main window created
+2025-02-12 10:51:31.077 DEBUG: Main window displayed and activated
+2025-02-12 10:51:31.078 DEBUG: Entering main event loop
+2025-02-12 10:56:59.134 DEBUG: Script started
+2025-02-12 10:56:59.136 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:56:59.168 DEBUG: QApplication initialized
+2025-02-12 10:56:59.176 DEBUG: Application style set to Fusion
+2025-02-12 10:57:00.054 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 10:57:40.627 DEBUG: Script started
+2025-02-12 10:57:40.628 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:57:40.657 DEBUG: QApplication initialized
+2025-02-12 10:57:40.666 DEBUG: Application style set to Fusion
+2025-02-12 10:57:41.528 DEBUG: Found Classic Outlook version: 16.0.0.18429
+2025-02-12 10:59:45.874 DEBUG: Script started
+2025-02-12 10:59:45.875 DEBUG: Starting Mail Cleaner application...
+2025-02-12 10:59:45.904 DEBUG: QApplication initialized
+2025-02-12 10:59:45.914 DEBUG: Application style set to Fusion
+2025-02-12 10:59:46.766 DEBUG: Found Classic Outlook version: 16.0.0.18429
