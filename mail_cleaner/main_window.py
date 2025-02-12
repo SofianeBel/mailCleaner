@@ -9,9 +9,13 @@ from PyQt6.QtWidgets import (
     QDialog, QApplication
 )
 from PyQt6.QtCore import Qt
-from .dialogs import OutlookVersionDialog, OutlookVersionSelectionDialog, PreviewDialog
-from .outlook_detector import check_outlook_version
-from .outlook_worker import OutlookWorker
+from .dialogs.outlook_version_dialog import OutlookVersionDialog
+from .dialogs.outlook_version_selection_dialog import OutlookVersionSelectionDialog
+from .dialogs.preview_dialog import PreviewDialog
+from .dialogs.account_selection_dialog import AccountSelectionDialog
+from .core.outlook_detector import check_outlook_version
+from .core.outlook_worker import OutlookWorker
+from .core.outlook_accounts import get_outlook_accounts
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +24,7 @@ class MailCleanerUI(QMainWindow):
         super().__init__()
         self.worker = None
         self.outlook_version = None
+        self.selected_accounts = []
         if not self.check_outlook_compatibility():
             sys.exit(1)
         self.initUI()
@@ -163,6 +168,34 @@ class MailCleanerUI(QMainWindow):
         layout.setSpacing(10)
         layout.setContentsMargins(20, 20, 20, 20)
         
+        # Account selection frame
+        account_frame = QFrame()
+        account_layout = QHBoxLayout(account_frame)
+        
+        account_label = QLabel("Email Accounts:")
+        account_label.setStyleSheet("font-size: 13px;")
+        
+        self.account_button = QPushButton("Select Accounts...")
+        self.account_button.clicked.connect(self.select_accounts)
+        self.account_button.setStyleSheet("""
+            QPushButton {
+                background-color: #f5f5f5;
+                color: #333;
+                border: 1px solid #ddd;
+            }
+            QPushButton:hover {
+                background-color: #e0e0e0;
+            }
+        """)
+        
+        self.account_status = QLabel("All accounts")
+        self.account_status.setStyleSheet("color: #666; font-weight: normal;")
+        
+        account_layout.addWidget(account_label)
+        account_layout.addWidget(self.account_button)
+        account_layout.addWidget(self.account_status)
+        account_layout.addStretch()
+        
         # Age selection frame
         age_frame = QFrame()
         age_layout = QHBoxLayout(age_frame)
@@ -254,6 +287,7 @@ class MailCleanerUI(QMainWindow):
         buttons_layout.addStretch()
         
         # Add all frames to main layout
+        layout.addWidget(account_frame)
         layout.addWidget(age_frame)
         layout.addWidget(folders_frame)
         layout.addWidget(action_frame)
@@ -261,6 +295,25 @@ class MailCleanerUI(QMainWindow):
         layout.addWidget(buttons_frame)
         
         self.log_message("Application ready.")
+
+    def select_accounts(self):
+        """Show account selection dialog"""
+        accounts = get_outlook_accounts()
+        if not accounts:
+            self.log_message("No accounts detected. Processing default folders.")
+            return
+            
+        dialog = AccountSelectionDialog([acc.to_dict() for acc in accounts], self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.selected_accounts = dialog.get_selected_accounts()
+            if self.selected_accounts:
+                self.account_status.setText(
+                    f"{len(self.selected_accounts)} account{'s' if len(self.selected_accounts) > 1 else ''} selected"
+                )
+                self.log_message(f"Selected accounts: {', '.join(self.selected_accounts)}")
+            else:
+                self.account_status.setText("All accounts")
+                self.log_message("No accounts selected, processing all accessible folders.")
 
     def log_message(self, message: str):
         """Add a message to the status text area with timestamp"""
@@ -284,16 +337,40 @@ class MailCleanerUI(QMainWindow):
             selected_folders,
             self.action_combo.currentText(),
             preview_mode=True,
-            outlook_version=self.outlook_version
+            outlook_version=self.outlook_version,
+            selected_accounts=self.selected_accounts
         )
         
         self.worker.progress.connect(self.update_progress)
         self.worker.status.connect(self.log_message)
         self.worker.preview_data.connect(self.show_preview_dialog)
         self.worker.finished.connect(self.preview_finished)
+        self.worker.account_detected.connect(self.on_account_detected)
         
         self.worker.start()
         self.log_message("Generating preview...")
+
+    def on_account_detected(self, account_info: Dict):
+        """Handle account detection from worker"""
+        account_type = account_info['account_type']
+        is_primary = account_info['is_primary']
+        is_gmail = account_info['is_gmail']
+        is_office365 = account_info['is_office365']
+        
+        status = []
+        if is_primary:
+            status.append("Primary")
+        if is_gmail:
+            status.append("Gmail")
+        elif is_office365:
+            status.append("Office 365")
+        
+        status_str = f" ({', '.join(status)})" if status else ""
+        
+        self.log_message(
+            f"Detected {account_info['display_name']} "
+            f"({account_type}){status_str}"
+        )
 
     def show_preview_dialog(self, emails_by_recipient: Dict[str, List[Tuple]]):
         """Show the preview dialog with email data"""
@@ -315,10 +392,16 @@ class MailCleanerUI(QMainWindow):
             return
 
         if not skip_confirmation:
+            account_str = (
+                f" in {len(self.selected_accounts)} selected account{'s' if len(self.selected_accounts) > 1 else ''}"
+                if self.selected_accounts else " in all accounts"
+            )
+            
             confirm_msg = (
                 f"This will {self.action_combo.currentText().lower()} emails older than "
                 f"{self.age_spinbox.value()} {self.unit_combo.currentText().lower()} "
-                f"in the selected folders. It is recommended to preview first. Continue?"
+                f"in the selected folders{account_str}. "
+                "It is recommended to preview first. Continue?"
             )
             
             reply = QMessageBox.question(
@@ -341,12 +424,14 @@ class MailCleanerUI(QMainWindow):
             self.unit_combo.currentText(),
             selected_folders,
             self.action_combo.currentText(),
-            outlook_version=self.outlook_version
+            outlook_version=self.outlook_version,
+            selected_accounts=self.selected_accounts
         )
         
         self.worker.progress.connect(self.update_progress)
         self.worker.status.connect(self.log_message)
         self.worker.finished.connect(self.process_finished)
+        self.worker.account_detected.connect(self.on_account_detected)
         
         self.worker.start()
         self.log_message("Processing started...")
